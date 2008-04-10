@@ -3,8 +3,7 @@
 use strict;
 use warnings;
 
-use Test::Most 'no_plan';
-use lib '.';
+use Test::More tests => 9;
 use Test::TAP;
 
 

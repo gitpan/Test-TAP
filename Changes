@@ -1,5 +1,8 @@
 Revision history for Test-TAP
 
-0.01    Date/time
-        First version, released on an unsuspecting world.
+0.02    2008-04-09
+        Removed "Test::Most".  Oops.  People shouldn't be dependent on that.
+
+0.01    2008-04-09
+        Test whether your TAP is passing or failing.
 
