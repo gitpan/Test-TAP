@@ -4,17 +4,19 @@ use strict;
 use Carp;
 use Test::Builder;
 
+use vars '$VERSION';
+
 =head1 NAME
 
 Test::TAP - Test your TAP
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION = '0.02';
+$VERSION = '0.03';
 
 my $TEST = Test::Builder->new;
 
@@ -123,46 +125,34 @@ sub is_failing_tap ($;$) {
     }
 }
 
-
 sub _tap_failed {
     my $tap      = shift;
     my $plan_re  = qr/1\.\.(\d+)/;
     my $test_re  = qr/(?:not )?ok/;
-    my @failed;
+    my $failed;
     my $core_tap = '';
     foreach ( split "\n" => $tap ) {
-        if ( /^not ok/ ) {
-            # TODO tests are not failures
-            push @failed => $_ unless 
-                m/^ ( [^\\\#]* (?: \\. [^\\\#]* )* )
+        if (/^not ok/) {    # TODO tests are not failures
+            $failed++
+              unless m/^ ( [^\\\#]* (?: \\. [^\\\#]* )* )
                  \# \s* TODO \b \s* (.*) $/ix
         }
-        next unless /^(?:$plan_re|$test_re)/;
-        $core_tap .= "$_\n";
+        $core_tap .= "$_\n" if /^(?:$plan_re|$test_re)/;
     }
     my $plan;
-    if ( $core_tap =~ /^$plan_re/ ) {
+    if ( $core_tap =~ /^$plan_re/ or $core_tap =~ /$plan_re$/ ) {
         $plan = $1;
     }
-    elsif ( $core_tap =~ /$plan_re$/ ) {
-        $plan = $1;
-    }
-    return 'No plan found' unless defined $plan;
-
-    if ( @failed ) {
-        my $failed = @failed;
-        return "Failed $failed out of $plan tests";
-    }
+    return 'No plan found'                     unless defined $plan;
+    return "Failed $failed out of $plan tests" if $failed;
 
     my $plans_found = 0;
     $plans_found++ while $core_tap =~ /^$plan_re/gm;
-    return '$plans_found plans found'
-      if $plans_found > 1;
+    return "$plans_found plans found" if $plans_found > 1;
 
     my $tests = 0;
     $tests++ while $core_tap =~ /^$test_re/gm;
-    return "Planned $plan tests and found $tests tests"
-      if $tests != $plan;
+    return "Planned $plan tests and found $tests tests" if $tests != $plan;
 
     return;
 }
